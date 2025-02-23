@@ -22,6 +22,12 @@ const rules: KarabinerRules[] = [
               value: 1,
             },
           },
+          {
+            set_variable: {
+              name: "layer_hold",
+              value: 1,
+            },
+          },
         ],
         to_after_key_up: [
           {
@@ -30,12 +36,10 @@ const rules: KarabinerRules[] = [
               value: 0,
             },
           },
-        ],
-        to_if_held_down: [
           {
             set_variable: {
               name: "layer_hold",
-              value: 1,
+              value: 0,
             },
           },
         ],
@@ -49,6 +53,49 @@ const rules: KarabinerRules[] = [
         ],
         type: "basic",
       },
+      {
+        description: "Right Command -> Layer ON",
+        from: {
+          key_code: "right_command",
+          modifiers: {
+            optional: ["any"],
+          },
+        },
+        to: [
+          {
+            set_variable: {
+              name: "layer",
+              value: 1,
+            },
+          },
+        ],
+        type: "basic",
+      },
+      {
+        description: "Left Command -> Layer OFF",
+        from: {
+          key_code: "left_command",
+          modifiers: {
+            optional: ["any"],
+          },
+        },
+        to: [
+          {
+            set_variable: {
+              name: "layer",
+              value: 0,
+            },
+          },
+        ],
+        conditions: [
+          {
+            type: "variable_if",
+            name: "layer",
+            value: 1,
+          },
+        ],
+        type: "basic",
+      },
     ],
   },
   // Home row mods and layer mappings
@@ -58,56 +105,97 @@ const rules: KarabinerRules[] = [
       // Base home row mods (when layer is not active)
       {
         type: "basic",
-        from: { key_code: "a" },
+        from: {
+          key_code: "a",
+          modifiers: {
+            optional: ["any"],
+          },
+        },
         to: [{ key_code: "left_shift" }],
         to_if_alone: [{ key_code: "a" }],
         conditions: [{ type: "variable_if", name: "layer", value: 0 }],
       },
       {
         type: "basic",
-        from: { key_code: "s" },
+        from: {
+          key_code: "s",
+          modifiers: {
+            optional: ["any"],
+          },
+        },
         to: [{ key_code: "left_control" }],
         to_if_alone: [{ key_code: "s" }],
         conditions: [{ type: "variable_if", name: "layer", value: 0 }],
       },
       {
         type: "basic",
-        from: { key_code: "d" },
+        from: {
+          key_code: "d",
+          modifiers: {
+            optional: ["any"],
+          },
+        },
         to: [{ key_code: "left_option" }],
         to_if_alone: [{ key_code: "d" }],
         conditions: [{ type: "variable_if", name: "layer", value: 0 }],
       },
       {
         type: "basic",
-        from: { key_code: "f" },
+        from: {
+          key_code: "f",
+          modifiers: {
+            optional: ["any"],
+          },
+        },
         to: [{ key_code: "left_command" }],
         to_if_alone: [{ key_code: "f" }],
         conditions: [{ type: "variable_if", name: "layer", value: 0 }],
       },
+      // Right-hand home row mods
       {
         type: "basic",
-        from: { key_code: "j" },
+        from: {
+          key_code: "j",
+          modifiers: {
+            optional: ["any"],
+          },
+        },
         to: [{ key_code: "right_command" }],
         to_if_alone: [{ key_code: "j" }],
         conditions: [{ type: "variable_if", name: "layer", value: 0 }],
       },
       {
         type: "basic",
-        from: { key_code: "k" },
+        from: {
+          key_code: "k",
+          modifiers: {
+            optional: ["any"],
+          },
+        },
         to: [{ key_code: "right_option" }],
         to_if_alone: [{ key_code: "k" }],
         conditions: [{ type: "variable_if", name: "layer", value: 0 }],
       },
       {
         type: "basic",
-        from: { key_code: "l" },
+        from: {
+          key_code: "l",
+          modifiers: {
+            optional: ["any"],
+          },
+        },
         to: [{ key_code: "right_control" }],
         to_if_alone: [{ key_code: "l" }],
         conditions: [{ type: "variable_if", name: "layer", value: 0 }],
       },
       {
         type: "basic",
-        from: { key_code: "semicolon" },
+        from: {
+          key_code: "semicolon",
+          modifiers: {
+            optional: ["any"],
+          },
+        },
         to: [{ key_code: "right_shift" }],
         to_if_alone: [{ key_code: "semicolon" }],
         conditions: [{ type: "variable_if", name: "layer", value: 0 }],
@@ -116,7 +204,12 @@ const rules: KarabinerRules[] = [
       // A key
       {
         type: "basic",
-        from: { key_code: "a" },
+        from: {
+          key_code: "a",
+          modifiers: {
+            optional: ["any"],
+          },
+        },
         to: [{ key_code: "left_shift" }],
         to_if_alone: [{ key_code: "grave_accent_and_tilde" }],
         conditions: [{ type: "variable_if", name: "layer", value: 1 }],
@@ -124,14 +217,24 @@ const rules: KarabinerRules[] = [
       // S key
       {
         type: "basic",
-        from: { key_code: "s" },
+        from: {
+          key_code: "s",
+          modifiers: {
+            optional: ["any"],
+          },
+        },
         to: [{ key_code: "left_control" }],
         conditions: [{ type: "variable_if", name: "layer", value: 1 }],
       },
       // D key
       {
         type: "basic",
-        from: { key_code: "d" },
+        from: {
+          key_code: "d",
+          modifiers: {
+            optional: ["any"],
+          },
+        },
         to: [{ key_code: "left_option" }],
         to_if_alone: [{ key_code: "open_bracket" }],
         conditions: [{ type: "variable_if", name: "layer", value: 1 }],
@@ -139,7 +242,12 @@ const rules: KarabinerRules[] = [
       // F key
       {
         type: "basic",
-        from: { key_code: "f" },
+        from: {
+          key_code: "f",
+          modifiers: {
+            optional: ["any"],
+          },
+        },
         to: [{ key_code: "left_command" }],
         to_if_alone: [{ key_code: "close_bracket" }],
         conditions: [{ type: "variable_if", name: "layer", value: 1 }],
@@ -147,21 +255,36 @@ const rules: KarabinerRules[] = [
       // G key
       {
         type: "basic",
-        from: { key_code: "g" },
+        from: {
+          key_code: "g",
+          modifiers: {
+            optional: ["any"],
+          },
+        },
         to: [{ key_code: "equal_sign" }],
         conditions: [{ type: "variable_if", name: "layer", value: 1 }],
       },
       // H key
       {
         type: "basic",
-        from: { key_code: "h" },
+        from: {
+          key_code: "h",
+          modifiers: {
+            optional: ["any"],
+          },
+        },
         to: [{ key_code: "left_arrow" }],
         conditions: [{ type: "variable_if", name: "layer", value: 1 }],
       },
       // J key
       {
         type: "basic",
-        from: { key_code: "j" },
+        from: {
+          key_code: "j",
+          modifiers: {
+            optional: ["any"],
+          },
+        },
         to: [{ key_code: "right_command" }],
         to_if_alone: [{ key_code: "down_arrow" }],
         conditions: [{ type: "variable_if", name: "layer", value: 1 }],
@@ -169,7 +292,12 @@ const rules: KarabinerRules[] = [
       // K key
       {
         type: "basic",
-        from: { key_code: "k" },
+        from: {
+          key_code: "k",
+          modifiers: {
+            optional: ["any"],
+          },
+        },
         to: [{ key_code: "right_option" }],
         to_if_alone: [{ key_code: "up_arrow" }],
         conditions: [{ type: "variable_if", name: "layer", value: 1 }],
@@ -177,7 +305,12 @@ const rules: KarabinerRules[] = [
       // L key
       {
         type: "basic",
-        from: { key_code: "l" },
+        from: {
+          key_code: "l",
+          modifiers: {
+            optional: ["any"],
+          },
+        },
         to: [{ key_code: "right_control" }],
         to_if_alone: [{ key_code: "right_arrow" }],
         conditions: [{ type: "variable_if", name: "layer", value: 1 }],
@@ -185,7 +318,12 @@ const rules: KarabinerRules[] = [
       // Semicolon key
       {
         type: "basic",
-        from: { key_code: "semicolon" },
+        from: {
+          key_code: "semicolon",
+          modifiers: {
+            optional: ["any"],
+          },
+        },
         to: [{ key_code: "right_shift" }],
         to_if_alone: [{ key_code: "quote" }],
         conditions: [{ type: "variable_if", name: "layer", value: 1 }],
