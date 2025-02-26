@@ -1,213 +1,293 @@
-import { To, KeyCode, Manipulator, KarabinerRules } from "./types";
+import { To, KeyCode, Manipulator, KarabinerRules, Conditions } from "./types";
 
 /**
- * Custom way to describe a command in a layer
+ * Represents a layer in Karabiner
  */
-export interface LayerCommand {
-  to: To[];
+export interface Layer {
+  name: string;
   description?: string;
 }
 
-type HyperKeySublayer = {
-  // The ? is necessary, otherwise we'd have to define something for _every_ key code
-  [key_code in KeyCode]?: LayerCommand;
-};
-
 /**
- * Create a Hyper Key sublayer, where every command is prefixed with a key
- * e.g. Hyper + O ("Open") is the "open applications" layer, I can press
- * e.g. Hyper + O + G ("Google Chrome") to open Chrome
+ * Create a layer with associated utility functions
  */
-export function createHyperSubLayer(
-  sublayer_key: KeyCode,
-  commands: HyperKeySublayer,
-  allSubLayerVariables: string[]
-): Manipulator[] {
-  const subLayerVariableName = generateSubLayerVariableName(sublayer_key);
+export function createLayer(
+  name: string,
+  options: { description?: string } = {}
+) {
+  const layer: Layer = {
+    name,
+    description: options.description,
+  };
 
-  return [
-    // When Hyper + sublayer_key is pressed, set the variable to 1; on key_up, set it to 0 again
-    {
-      description: `Toggle Hyper sublayer ${sublayer_key}`,
-      type: "basic",
-      from: {
-        key_code: sublayer_key,
-        modifiers: {
-          optional: ["any"],
-        },
+  return {
+    layerName: layer.name,
+
+    // Set the layer's state
+    setLayer: (value: number): To => ({
+      set_variable: {
+        name: layer.name,
+        value: value ?? 0,
       },
-      to_after_key_up: [
+    }),
+
+    // Create a condition to check if the layer is active
+    whenInLayer: (value: number | string = 1): Conditions => ({
+      type: "variable_if",
+      name: layer.name,
+      value,
+    }),
+
+    // Apply a layer condition to one or more manipulators
+    inLayer: (
+      value: number | string | Manipulator | Manipulator[],
+      mappings?: Manipulator | Manipulator[]
+    ): Manipulator[] => {
+      // Handle the case where value is actually the mappings (and layer value defaults to 1)
+      if (typeof value === "object") {
+        mappings = value;
+        value = 1;
+      }
+
+      if (!mappings) {
+        throw new Error("No mappings provided to inLayer");
+      }
+
+      const condition = {
+        type: "variable_if" as const,
+        name: layer.name,
+        value: value as number | string,
+      };
+
+      if (Array.isArray(mappings)) {
+        return mappings.map((mapping) => ({
+          ...mapping,
+          conditions: [...(mapping.conditions || []), condition],
+        }));
+      }
+
+      return [
         {
-          set_variable: {
-            name: subLayerVariableName,
-            // The default value of a variable is 0: https://karabiner-elements.pqrs.org/docs/json/complex-modifications-manipulator-definition/conditions/variable/
-            // That means by using 0 and 1 we can filter for "0" in the conditions below and it'll work on startup
-            value: 0,
-          },
+          ...mappings,
+          conditions: [...(mappings.conditions || []), condition],
         },
-      ],
-      to: [
-        {
-          set_variable: {
-            name: subLayerVariableName,
-            value: 1,
-          },
-        },
-      ],
-      // This enables us to press other sublayer keys in the current sublayer
-      // (e.g. Hyper + O > M even though Hyper + M is also a sublayer)
-      // basically, only trigger a sublayer if no other sublayer is active
-      conditions: [
-        ...allSubLayerVariables
-          .filter(
-            (subLayerVariable) => subLayerVariable !== subLayerVariableName
-          )
-          .map((subLayerVariable) => ({
-            type: "variable_if" as const,
-            name: subLayerVariable,
-            value: 0,
-          })),
-        {
-          type: "variable_if",
-          name: "hyper",
-          value: 1,
-        },
-      ],
+      ];
     },
-    // Define the individual commands that are meant to trigger in the sublayer
-    ...(Object.keys(commands) as (keyof typeof commands)[]).map(
-      (command_key): Manipulator => ({
-        ...commands[command_key],
-        type: "basic" as const,
+
+    // Create a layer toggle key
+    createToggle: (
+      fromKey: KeyCode,
+      options: {
+        toggleIfAlone?: boolean;
+        description?: string;
+      } = {}
+    ): Manipulator => {
+      const { toggleIfAlone = true, description } = options;
+
+      const manipulator: Manipulator = {
+        type: "basic",
+        description: description || `${fromKey} -> ${layer.name} Toggle/Hold`,
         from: {
-          key_code: command_key,
+          key_code: fromKey,
           modifiers: {
             optional: ["any"],
           },
         },
-        // Only trigger this command if the variable is 1 (i.e., if Hyper + sublayer is held)
-        conditions: [
+        to: [
           {
-            type: "variable_if",
-            name: subLayerVariableName,
-            value: 1,
+            set_variable: {
+              name: layer.name,
+              value: 1,
+            },
+          },
+          {
+            set_variable: {
+              name: `${layer.name}_hold`,
+              value: 1,
+            },
           },
         ],
-      })
-    ),
-  ];
+        to_after_key_up: [
+          {
+            set_variable: {
+              name: layer.name,
+              value: 0,
+            },
+          },
+          {
+            set_variable: {
+              name: `${layer.name}_hold`,
+              value: 0,
+            },
+          },
+        ],
+      };
+
+      if (toggleIfAlone) {
+        manipulator.to_if_alone = [
+          {
+            set_variable: {
+              name: layer.name,
+              value: "toggle",
+            },
+          },
+        ];
+      }
+
+      return manipulator;
+    },
+  };
 }
 
 /**
- * Create all hyper sublayers. This needs to be a single function, as well need to
- * have all the hyper variable names in order to filter them and make sure only one
- * activates at a time
+ * Determine if a key is a modifier key
  */
-export function createHyperSubLayers(subLayers: {
-  [key_code in KeyCode]?: HyperKeySublayer | LayerCommand;
-}): KarabinerRules[] {
-  const allSubLayerVariables = (
-    Object.keys(subLayers) as (keyof typeof subLayers)[]
-  ).map((sublayer_key) => generateSubLayerVariableName(sublayer_key));
-
-  return Object.entries(subLayers).map(([key, value]) =>
-    "to" in value
-      ? {
-          description: `Hyper Key + ${key}`,
-          manipulators: [
-            {
-              ...value,
-              type: "basic" as const,
-              from: {
-                key_code: key as KeyCode,
-                modifiers: {
-                  optional: ["any"],
-                },
-              },
-              conditions: [
-                {
-                  type: "variable_if",
-                  name: "hyper",
-                  value: 1,
-                },
-                ...allSubLayerVariables.map((subLayerVariable) => ({
-                  type: "variable_if" as const,
-                  name: subLayerVariable,
-                  value: 0,
-                })),
-              ],
-            },
-          ],
-        }
-      : {
-          description: `Hyper Key sublayer "${key}"`,
-          manipulators: createHyperSubLayer(
-            key as KeyCode,
-            value,
-            allSubLayerVariables
-          ),
-        }
+function isModifier(key: string): boolean {
+  return (
+    key.includes("shift") ||
+    key.includes("control") ||
+    key.includes("option") ||
+    key.includes("command")
   );
 }
 
-function generateSubLayerVariableName(key: KeyCode) {
-  return `hyper_sublayer_${key}`;
+/**
+ * Convert a string key code or To object to a To object
+ */
+function toToObject(action: KeyCode | To): To {
+  if (typeof action === "string") {
+    return { key_code: action };
+  }
+  return action;
 }
 
 /**
- * Shortcut for "open" shell command
+ * Map a key to an action
  */
-export function open(...what: string[]): LayerCommand {
-  return {
-    to: what.map((w) => ({
-      shell_command: `open ${w}`,
-    })),
-    description: `Open ${what.join(" & ")}`,
+export function map(
+  fromKey: KeyCode,
+  toAction:
+    | KeyCode
+    | To
+    | {
+        tap?: KeyCode | To;
+        hold?: KeyCode | To;
+      },
+  options: {
+    description?: string;
+    conditions?: Conditions[];
+  } = {}
+): Manipulator {
+  const { description, conditions = [] } = options;
+
+  const manipulator: Manipulator = {
+    type: "basic",
+    description,
+    from: {
+      key_code: fromKey,
+      modifiers: {
+        optional: ["any"],
+      },
+    },
+    ...(conditions.length > 0 && { conditions }),
   };
+
+  // Handle string or To object
+  if (
+    typeof toAction === "string" ||
+    "key_code" in toAction ||
+    "shell_command" in toAction ||
+    "set_variable" in toAction
+  ) {
+    const action = toToObject(toAction as KeyCode | To);
+
+    // If it's a modifier key, make it a dual-role key
+    if (typeof toAction === "string" && isModifier(toAction)) {
+      manipulator.to = [action];
+      manipulator.to_if_alone = [{ key_code: fromKey }];
+    } else {
+      manipulator.to = [action];
+    }
+  }
+  // Handle explicit tap/hold configuration
+  else if ("tap" in toAction || "hold" in toAction) {
+    const { tap, hold } = toAction;
+
+    if (hold) {
+      manipulator.to = [toToObject(hold)];
+    }
+
+    if (tap) {
+      manipulator.to_if_alone = [toToObject(tap)];
+    }
+  }
+
+  return manipulator;
 }
 
 /**
- * Utility function to create a LayerCommand from a tagged template literal
- * where each line is a shell command to be executed.
+ * Create a layer toggle key
  */
-export function shell(
-  strings: TemplateStringsArray,
-  ...values: any[]
-): LayerCommand {
-  const commands = strings.reduce((acc, str, i) => {
-    const value = i < values.length ? values[i] : "";
-    const lines = (str + value)
-      .split("\n")
-      .filter((line) => line.trim() !== "");
-    acc.push(...lines);
-    return acc;
-  }, [] as string[]);
+export function createLayerToggle(
+  fromKey: KeyCode,
+  layer: Layer | string,
+  options: {
+    toggleIfAlone?: boolean;
+    description?: string;
+  } = {}
+): Manipulator {
+  const { toggleIfAlone = true, description } = options;
+  const layerName = typeof layer === "string" ? layer : layer.name;
 
-  return {
-    to: commands.map((command) => ({
-      shell_command: command.trim(),
-    })),
-    description: commands.join(" && "),
-  };
-}
-
-/**
- * Shortcut for managing window sizing with Rectangle
- */
-export function rectangle(name: string): LayerCommand {
-  return {
+  const manipulator: Manipulator = {
+    type: "basic",
+    description: description || `${fromKey} -> ${layerName} Toggle/Hold`,
+    from: {
+      key_code: fromKey,
+      modifiers: {
+        optional: ["any"],
+      },
+    },
     to: [
       {
-        shell_command: `open -g rectangle://execute-action?name=${name}`,
+        set_variable: {
+          name: layerName,
+          value: 1,
+        },
+      },
+      {
+        set_variable: {
+          name: `${layerName}_hold`,
+          value: 1,
+        },
       },
     ],
-    description: `Window: ${name}`,
+    to_after_key_up: [
+      {
+        set_variable: {
+          name: layerName,
+          value: 0,
+        },
+      },
+      {
+        set_variable: {
+          name: `${layerName}_hold`,
+          value: 0,
+        },
+      },
+    ],
   };
-}
 
-/**
- * Shortcut for "Open an app" command (of which there are a bunch)
- */
-export function app(name: string): LayerCommand {
-  return open(`-a '${name}.app'`);
+  if (toggleIfAlone) {
+    manipulator.to_if_alone = [
+      {
+        set_variable: {
+          name: layerName,
+          value: "toggle",
+        },
+      },
+    ];
+  }
+
+  return manipulator;
 }
