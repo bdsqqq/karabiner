@@ -1,0 +1,34 @@
+---
+description: Any update to karabiner rules or utilities should use these guidelines
+globs: *.ts
+---
+# Karabiner Configuration Rules
+
+## Overview
+This document outlines the rules for implementing Karabiner key mappings in this codebase. These rules ensure consistency and type safety while maintaining functionality.
+
+## Rules
+
+### 1. Research First
+Before implementing any new mapping:
+- Search for similar implementations in the codebase
+- Pay special attention to [max's_rules.ts](mdc:max's_rules.ts) and [max's_utils.ts](mdc:max's_utils.ts) which serves as a reference
+- Understand the patterns used in existing solutions
+
+### 2. Use Type-Safe Properties
+Only use properties defined in [types.ts](mdc:types.ts) interfaces:
+- `to`: For immediate actions when key is pressed
+- `to_after_key_up`: For cleanup actions when key is released
+- `to_if_alone`: For actions when key is tapped
+- `conditions`: For contextual behavior
+
+### 3. No Type Assertions
+Never use type assertions (e.g., `as any`). Instead:
+- Look for examples in the codebase
+- Refactor to use supported properties
+- If a property seems essential but isn't in types, consider updating `types.ts`
+
+### 4. Maintain Fork Separation
+- Only modify [rules.ts](mdc:rules.ts), and [utils.ts](mdc:utils.ts)
+- Keep other files (like [types.ts](mdc:types.ts)) unchanged
+- Use patterns from the codebase to solve type issues
