@@ -18,7 +18,7 @@ export interface Parameters {
   "basic.simultaneous_threshold_milliseconds"?: number;
 }
 
-type Conditions =
+export type Conditions =
   | FrontMostApplicationCondition
   | DeviceCondition
   | KeybaordTypeCondition
