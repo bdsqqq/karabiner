@@ -1,4 +1,4 @@
-import { To, KeyCode, Manipulator, KarabinerRules, Conditions } from "./types";
+import { To, KeyCode, Manipulator, Conditions } from "./types";
 
 /**
  * Represents a layer in Karabiner
@@ -162,7 +162,27 @@ function toToObject(action: KeyCode | To): To {
 }
 
 /**
- * Map a key to an action
+ * Map a key to an action,
+ *
+ * the when both "tap" and "hold" actions are defined,
+ * use a dual-path activation strategy and lazy modifiers
+ * to improve the typing experience.
+ * Very important with homerow mods, as it prevents "of course"
+ * or "if ()" from triggering cmd(f)+space if you type fast.
+ *
+ * Details:
+ * 1. DUAL-PATH ACTIVATION:
+ * - When you tap a key quickly, it immediately sends the
+ * character via to_delayed_action.to_if_canceled
+ * - When you hold a key, it activates the modifier via
+ * to_if_held_down
+ * - The halt:true property prevents both actions from
+ * happening simultaneously
+ *
+ * 2. LAZY MODIFIERS:
+ * The lazy:true property ensures modifiers only activate
+ * when another key is pressed. This prevents accidental modifier
+ * activations during normal typing.
  */
 export function map(
   fromKey: KeyCode,
@@ -203,6 +223,7 @@ export function map(
 
     // If it's a modifier key, make it a dual-role key
     if (typeof toAction === "string" && isModifier(toAction)) {
+      // Traditional implementation for modifiers
       manipulator.to = [action];
       manipulator.to_if_alone = [{ key_code: fromKey }];
     } else {
@@ -213,12 +234,48 @@ export function map(
   else if ("tap" in toAction || "hold" in toAction) {
     const { tap, hold } = toAction;
 
-    if (hold) {
-      manipulator.to = [toToObject(hold)];
-    }
+    if (hold && tap) {
+      // Check if hold is a modifier key
+      const isHoldModifier = typeof hold === "string" && isModifier(hold);
 
-    if (tap) {
-      manipulator.to_if_alone = [toToObject(tap)];
+      if (isHoldModifier) {
+        // Add halt to prevent double triggering
+        manipulator.to_if_alone = [
+          {
+            ...toToObject(tap),
+            halt: true,
+          },
+        ];
+
+        // Add the modifier with lazy:true to prevent unwanted activations
+        // The lazy property ensures the modifier only activates when another key is pressed
+        manipulator.to_if_held_down = [
+          {
+            ...toToObject(hold),
+            halt: true,
+            lazy: true,
+          },
+        ];
+
+        // Add to_delayed_action to improve responsiveness when typing quickly. This is the key to the dual-path activation strategy
+        manipulator.to_delayed_action = {
+          to_if_canceled: [toToObject(tap)],
+          to_if_invoked: [],
+        };
+      } else {
+        // Standard implementation for non-modifier hold actions
+        manipulator.to_if_alone = [toToObject(tap)];
+        manipulator.to_if_held_down = [toToObject(hold)];
+      }
+    } else {
+      // Handle cases where only one of tap or hold is defined
+      if (hold) {
+        manipulator.to_if_held_down = [toToObject(hold)];
+      }
+
+      if (tap) {
+        manipulator.to_if_alone = [toToObject(tap)];
+      }
     }
   }
 

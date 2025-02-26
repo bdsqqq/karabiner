@@ -1,26 +1,21 @@
 import fs from "fs";
-import { KarabinerRules, Manipulator } from "./types";
+import { KarabinerRules } from "./types";
 import { createLayer, map } from "./utils";
 
-// Create a layer with all its utilities
 const { setLayer, inLayer, createToggle } = createLayer("symnav", {
   description: "Symbol and Navigation Layer",
 });
 
 const rules: KarabinerRules[] = [
-  // Define the Layer Toggle key (Caps Lock)
   {
-    description: "Layer Toggle/Hold (Caps Lock)",
+    description: "symnav layer controls",
     manipulators: [
-      // Caps Lock toggles layer when tapped, activates while held
       createToggle("caps_lock"),
 
-      // Right Command activates layer
       map("right_command", setLayer(1), {
         description: "Right Command -> Layer ON",
       }),
 
-      // Left Command deactivates layer when layer is active
       ...inLayer(
         1,
         map("left_command", setLayer(0), {
@@ -29,39 +24,32 @@ const rules: KarabinerRules[] = [
       ),
     ],
   },
-  // Home row mods and layer mappings
   {
-    description: "Home Row Mods and Layer Mappings",
+    description: "Homerow mods and symnav mappings",
     manipulators: [
-      // Base home row mods (when layer is not active)
       ...inLayer(0, [
         map("a", { tap: "a", hold: "left_shift" }),
         map("s", { tap: "s", hold: "left_control" }),
         map("d", { tap: "d", hold: "left_option" }),
         map("f", { tap: "f", hold: "left_command" }),
 
-        // Right-hand home row mods
         map("j", { tap: "j", hold: "right_command" }),
         map("k", { tap: "k", hold: "right_option" }),
         map("l", { tap: "l", hold: "right_control" }),
         map("semicolon", { tap: "semicolon", hold: "right_shift" }),
       ]),
 
-      // Layer-active mappings
       ...inLayer(1, [
-        // Home row mods with different tap behavior
         map("a", { tap: "grave_accent_and_tilde", hold: "left_shift" }),
         map("s", { hold: "left_control" }),
         map("d", { tap: "open_bracket", hold: "left_option" }),
         map("f", { tap: "close_bracket", hold: "left_command" }),
 
-        // Right-hand home row mods with arrow keys
         map("j", { tap: "down_arrow", hold: "right_command" }),
         map("k", { tap: "up_arrow", hold: "right_option" }),
         map("l", { tap: "right_arrow", hold: "right_control" }),
         map("semicolon", { tap: "quote", hold: "right_shift" }),
 
-        // Additional keys
         map("g", "equal_sign"),
         map("h", "left_arrow"),
         map("c", { key_code: "9", modifiers: ["left_shift"] }),
@@ -69,7 +57,6 @@ const rules: KarabinerRules[] = [
         map("b", "backslash"),
         map("n", "hyphen"),
 
-        // Number row mappings
         map("q", "1"),
         map("w", "2"),
         map("e", "3"),
@@ -85,7 +72,6 @@ const rules: KarabinerRules[] = [
   },
 ];
 
-// Write the configuration to karabiner.json
 fs.writeFileSync(
   "karabiner.json",
   JSON.stringify(
@@ -97,11 +83,16 @@ fs.writeFileSync(
         {
           name: "Default",
           complex_modifications: {
+            // These parameters are optimized for home row mods:
+            // - short to_delayed_action_delay (100ms) for responsive typing
+            // - short to_if_held_down_threshold (100ms) for quick modifier activation
+            // - moderate to_if_alone_timeout (150ms) to distinguish taps from holds
+            // - short simultaneous_threshold (50ms) for better multi-key detection
             parameters: {
-              "basic.simultaneous_threshold_milliseconds": 150,
-              "basic.to_delayed_action_delay_milliseconds": 200,
-              "basic.to_if_alone_timeout_milliseconds": 200,
-              "basic.to_if_held_down_threshold_milliseconds": 200,
+              "basic.simultaneous_threshold_milliseconds": 50,
+              "basic.to_delayed_action_delay_milliseconds": 100,
+              "basic.to_if_alone_timeout_milliseconds": 150,
+              "basic.to_if_held_down_threshold_milliseconds": 100,
             },
             rules,
           },
