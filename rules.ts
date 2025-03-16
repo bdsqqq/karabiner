@@ -2,7 +2,7 @@ import fs from "fs";
 import { KarabinerRules } from "./types";
 import { createLayer, map } from "./utils";
 
-const { setLayer, inLayer, createToggle } = createLayer("symnav", {
+const { setLayer, inLayer } = createLayer("symnav", {
   description: "Symbol and Navigation Layer",
 });
 
@@ -10,18 +10,25 @@ const rules: KarabinerRules[] = [
   {
     description: "symnav layer controls",
     manipulators: [
-      createToggle("caps_lock"),
+      ...inLayer(0, [
+        map("left_command", {
+          tap: "escape",
+          hold: "left_command",
+        }),
+        map("right_command", setLayer(1), {
+          description: "Right Command -> Layer ON",
+        }),
+      ]),
 
-      map("right_command", setLayer(1), {
-        description: "Right Command -> Layer ON",
-      }),
-
-      ...inLayer(
-        1,
+      ...inLayer(1, [
         map("left_command", setLayer(0), {
           description: "Left Command -> Layer OFF",
-        })
-      ),
+        }),
+
+        map("right_command", setLayer(0), {
+          description: "Right Command -> Layer OFF",
+        }),
+      ]),
     ],
   },
   {
