@@ -11,10 +11,6 @@ const rules: KarabinerRules[] = [
     description: "symnav layer controls",
     manipulators: [
       ...inLayer(0, [
-        map("left_command", {
-          tap: "escape",
-          hold: "left_command",
-        }),
         map("right_command", setLayer(1), {
           description: "Right Command -> Layer ON",
         }),
@@ -90,16 +86,12 @@ fs.writeFileSync(
         {
           name: "Default",
           complex_modifications: {
-            // These parameters are optimized for home row mods:
-            // - short to_delayed_action_delay (100ms) for responsive typing
-            // - short to_if_held_down_threshold (100ms) for quick modifier activation
-            // - moderate to_if_alone_timeout (150ms) to distinguish taps from holds
-            // - short simultaneous_threshold (50ms) for better multi-key detection
             parameters: {
-              "basic.simultaneous_threshold_milliseconds": 50,
-              "basic.to_delayed_action_delay_milliseconds": 100,
-              "basic.to_if_alone_timeout_milliseconds": 150,
-              "basic.to_if_held_down_threshold_milliseconds": 100,
+              // These parameters are optimized for home row mods
+              "basic.to_delayed_action_delay_milliseconds": 50, // short for responsive typing
+              "basic.to_if_held_down_threshold_milliseconds": 50, // short for quick modifier activation
+              "basic.to_if_alone_timeout_milliseconds": 150, // moderate to distinguish taps from holds
+              "basic.simultaneous_threshold_milliseconds": 50, // short for better multi-key detection
             },
             rules,
           },
