@@ -88,8 +88,8 @@ fs.writeFileSync(
           complex_modifications: {
             parameters: {
               // These parameters are optimized for home row mods
-              "basic.to_delayed_action_delay_milliseconds": 50, // short for responsive typing
-              "basic.to_if_held_down_threshold_milliseconds": 50, // short for quick modifier activation
+              "basic.to_delayed_action_delay_milliseconds": 100, // short for responsive typing
+              "basic.to_if_held_down_threshold_milliseconds": 100, // short for quick modifier activation
               "basic.to_if_alone_timeout_milliseconds": 150, // moderate to distinguish taps from holds
               "basic.simultaneous_threshold_milliseconds": 50, // short for better multi-key detection
             },
