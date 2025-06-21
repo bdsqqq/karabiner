@@ -13,50 +13,13 @@
                         "description": "symnav layer controls",
                         "manipulators": [
                             {
-                                "description": "caps_lock -> symnav Toggle/Hold",
-                                "from": {
-                                    "key_code": "caps_lock",
-                                    "modifiers": { "optional": ["any"] }
-                                },
-                                "to": [
+                                "conditions": [
                                     {
-                                        "set_variable": {
-                                            "name": "symnav",
-                                            "value": 1
-                                        }
-                                    },
-                                    {
-                                        "set_variable": {
-                                            "name": "symnav_hold",
-                                            "value": 1
-                                        }
+                                        "name": "symnav",
+                                        "type": "variable_if",
+                                        "value": 0
                                     }
                                 ],
-                                "to_after_key_up": [
-                                    {
-                                        "set_variable": {
-                                            "name": "symnav",
-                                            "value": 0
-                                        }
-                                    },
-                                    {
-                                        "set_variable": {
-                                            "name": "symnav_hold",
-                                            "value": 0
-                                        }
-                                    }
-                                ],
-                                "to_if_alone": [
-                                    {
-                                        "set_variable": {
-                                            "name": "symnav",
-                                            "value": "toggle"
-                                        }
-                                    }
-                                ],
-                                "type": "basic"
-                            },
-                            {
                                 "description": "Right Command -> Layer ON",
                                 "from": {
                                     "key_code": "right_command",
@@ -83,6 +46,29 @@
                                 "description": "Left Command -> Layer OFF",
                                 "from": {
                                     "key_code": "left_command",
+                                    "modifiers": { "optional": ["any"] }
+                                },
+                                "to": [
+                                    {
+                                        "set_variable": {
+                                            "name": "symnav",
+                                            "value": 0
+                                        }
+                                    }
+                                ],
+                                "type": "basic"
+                            },
+                            {
+                                "conditions": [
+                                    {
+                                        "name": "symnav",
+                                        "type": "variable_if",
+                                        "value": 1
+                                    }
+                                ],
+                                "description": "Right Command -> Layer OFF",
+                                "from": {
+                                    "key_code": "right_command",
                                     "modifiers": { "optional": ["any"] }
                                 },
                                 "to": [

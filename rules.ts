@@ -8,6 +8,10 @@ const { setLayer, inLayer } = createLayer("symnav", {
 
 const rules: KarabinerRules[] = [
   {
+    description: "Remap Caps Lock to Escape",
+    manipulators: [map("caps_lock", "escape")],
+  },
+  {
     description: "symnav layer controls",
     manipulators: [
       ...inLayer(0, [

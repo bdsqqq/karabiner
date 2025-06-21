@@ -10,19 +10,6 @@
                 },
                 "rules": [
                     {
-                        "description": "Remap Caps Lock to Escape",
-                        "manipulators": [
-                            {
-                                "from": {
-                                    "key_code": "caps_lock",
-                                    "modifiers": { "optional": ["any"] }
-                                },
-                                "to": [{ "key_code": "escape" }],
-                                "type": "basic"
-                            }
-                        ]
-                    },
-                    {
                         "description": "symnav layer controls",
                         "manipulators": [
                             {

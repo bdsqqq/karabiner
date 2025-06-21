@@ -10,19 +10,6 @@
                 },
                 "rules": [
                     {
-                        "description": "Remap Caps Lock to Escape",
-                        "manipulators": [
-                            {
-                                "from": {
-                                    "key_code": "caps_lock",
-                                    "modifiers": { "optional": ["any"] }
-                                },
-                                "to": [{ "key_code": "escape" }],
-                                "type": "basic"
-                            }
-                        ]
-                    },
-                    {
                         "description": "symnav layer controls",
                         "manipulators": [
                             {
@@ -833,6 +820,54 @@
                     }
                 ]
             },
+            "devices": [
+                {
+                    "identifiers": {
+                        "is_game_pad": true,
+                        "product_id": 8198,
+                        "vendor_id": 1406
+                    },
+                    "ignore": false,
+                    "simple_modifications": [
+                        {
+                            "from": { "generic_desktop": "dpad_up" },
+                            "to": [{ "mouse_key": { "x": 1536 } }]
+                        },
+                        {
+                            "from": { "generic_desktop": "dpad_down" },
+                            "to": [{ "mouse_key": { "x": -1536 } }]
+                        },
+                        {
+                            "from": { "generic_desktop": "dpad_left" },
+                            "to": [{ "mouse_key": { "y": -1536 } }]
+                        },
+                        {
+                            "from": { "generic_desktop": "dpad_right" },
+                            "to": [{ "mouse_key": { "y": 1536 } }]
+                        },
+                        {
+                            "from": { "pointing_button": "button15" },
+                            "to": [{ "pointing_button": "button1" }]
+                        },
+                        {
+                            "from": { "pointing_button": "button16" },
+                            "to": [{ "pointing_button": "button2" }]
+                        },
+                        {
+                            "from": { "pointing_button": "button5" },
+                            "to": [{ "mouse_key": { "speed_multiplier": 0.25 } }]
+                        },
+                        {
+                            "from": { "pointing_button": "button6" },
+                            "to": [{ "mouse_key": { "speed_multiplier": 2 } }]
+                        },
+                        {
+                            "from": { "pointing_button": "button11" },
+                            "to": [{ "mouse_key": { "speed_multiplier": 0.25 } }]
+                        }
+                    ]
+                }
+            ],
             "name": "Default",
             "virtual_hid_keyboard": { "keyboard_type_v2": "ansi" }
         }
