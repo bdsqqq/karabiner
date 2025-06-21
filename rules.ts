@@ -18,15 +18,15 @@ const rules: KarabinerRules[] = [
         map("right_command", setLayer(1), {
           description: "Right Command -> Layer ON",
         }),
+
+        map("left_command", "escape", {
+          description: "Left Command -> Escape",
+        }),
       ]),
 
       ...inLayer(1, [
         map("left_command", setLayer(0), {
           description: "Left Command -> Layer OFF",
-        }),
-
-        map("right_command", setLayer(0), {
-          description: "Right Command -> Layer OFF",
         }),
       ]),
     ],
