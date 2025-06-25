@@ -8,6 +8,27 @@ const { setLayer, inLayer } = createLayer("symnav", {
 
 const rules: KarabinerRules[] = [
   {
+    description: "Hyper Key (Caps Lock)",
+    manipulators: [
+      {
+        description: "Caps Lock -> Hyper Key (⌃⌥⇧⌘)",
+        type: "basic",
+        from: {
+          key_code: "caps_lock",
+          modifiers: {
+            optional: ["any"],
+          },
+        },
+        to: [
+          {
+            key_code: "left_shift",
+            modifiers: ["left_command", "left_control", "left_option"],
+          },
+        ],
+      },
+    ],
+  },
+  {
     description: "symnav layer controls",
     manipulators: [
       ...inLayer(0, [
